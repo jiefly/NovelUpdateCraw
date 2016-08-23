@@ -7,8 +7,10 @@ from bs4 import BeautifulSoup
 
 class HtmlParser(object):
     def pase(self, page_url, html_content):
-        if page_url is None or html_content is None:
+        if html_content is None:
             return
+        if page_url == '':
+            page_url = 'http://www.zhuizhuishu.com/top.html'
         soup = BeautifulSoup(html_content, 'html.parser', from_encoding='utf8')
         return self._get_new_urls(page_url, soup), self._get_new_data(page_url, soup)
 
@@ -85,7 +87,7 @@ class HtmlParser(object):
         link = soup.find('div', id="divPageNav").find('a', text="尾页")['href']
         patt = re.compile(r"(\d+)")
         page_num = int(patt.search(link).group())
-        for i in range(1,page_num+1):
-            new_url = urllib.parse.urljoin(page_url,''.join(['/top_',str(i),'.html']))
+        for i in range(1, page_num + 1):
+            new_url = urllib.parse.urljoin(page_url, ''.join(['/top_', str(i), '.html']))
             new_urls.add(new_url)
         return new_urls

@@ -1,9 +1,11 @@
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 from test import html_downloader
 from test import html_outputer
 from test import html_parser
 from test import url_manager
 import pickle
+
+from test import work_manager
 
 
 class SpiderMain(object):
@@ -12,25 +14,28 @@ class SpiderMain(object):
         self.downloader = html_downloader.HtmlDownloader()
         self.parser = html_parser.HtmlParser()
         self.outputer = html_outputer.HtmlOutputer()
-    def save_craw_info(self,old_urls,new_urls,books_data):
-        output_old_urls = open('old_urls.pkl','wb')
-        output_new_urls = open('new_urls.pkl','wb')
-        output_books_data = open('books_data.pkl','wb')
+        self.manager = work_manager.WorkManager()
+
+    def save_craw_info(self, old_urls, new_urls, books_data):
+        output_old_urls = open('old_urls.pkl', 'wb')
+        output_new_urls = open('new_urls.pkl', 'wb')
+        output_books_data = open('books_data.pkl', 'wb')
         # 保存已经爬过的url
-        pickle.dump(old_urls,output_old_urls)
+        pickle.dump(old_urls, output_old_urls)
         # 保存爬到的数据
-        pickle.dump(books_data,output_books_data)
+        pickle.dump(books_data, output_books_data)
         # 保存还没有爬过的url
-        pickle.dump(new_urls,output_new_urls)
+        pickle.dump(new_urls, output_new_urls)
         output_old_urls.close()
         output_books_data.close()
         output_new_urls.close()
+
     def init_craw_data(self):
         global root_url
         try:
-            books_old_url_file = open('old_urls.pkl','rb')
-            books_new_url_file = open('new_urls.pkl','rb')
-            books_data_file = open('books_data.pkl','rb')
+            books_old_url_file = open('old_urls.pkl', 'rb')
+            books_new_url_file = open('new_urls.pkl', 'rb')
+            books_data_file = open('books_data.pkl', 'rb')
             old_urls = pickle.load(books_old_url_file)
             new_urls = pickle.load(books_new_url_file)
             books_data = pickle.load(books_data_file)
@@ -63,10 +68,11 @@ class SpiderMain(object):
                 count = count + 1
             except:
                 print("craw failed")
-        obj_spider.save_craw_info(self.urls.get_old_urls(),self.urls.get_new_urls(),self.outputer.datas)
+        obj_spider.save_craw_info(self.urls.get_old_urls(), self.urls.get_new_urls(),
+                                  self.outputer.datas)
         self.outputer.output_html()
+
 
 if __name__ == "__main__":
     obj_spider = SpiderMain()
     obj_spider.init_craw_data()
-
