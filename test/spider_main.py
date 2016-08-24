@@ -1,10 +1,11 @@
 # -*-coding:utf-8-*-
+import queue
+import pickle
+
 from test import html_downloader
 from test import html_outputer
 from test import html_parser
 from test import url_manager
-import pickle
-
 from test import work_manager
 
 
@@ -14,8 +15,8 @@ class SpiderMain(object):
         self.downloader = html_downloader.HtmlDownloader()
         self.parser = html_parser.HtmlParser()
         self.outputer = html_outputer.HtmlOutputer()
-        self.manager = work_manager.WorkManager()
-
+        self.manager = work_manager
+        self.queue = queue.Queue(maxsize=0)
     def save_craw_info(self, old_urls, new_urls, books_data):
         output_old_urls = open('old_urls.pkl', 'wb')
         output_new_urls = open('new_urls.pkl', 'wb')
@@ -42,15 +43,32 @@ class SpiderMain(object):
             self.outputer.init_data(books_data)
             self.urls.add_old_urls(old_urls)
             self.urls.add_new_urls(new_urls)
-            for url in new_urls:
-                root_url = url
-                break
-            obj_spider.craw(root_url)
+            # 所有数据抓取完毕
+            if self.urls.old_urls is not None and self.urls.new_urls is None:
+                print("没有待抓取的数据")
+                return
+            # 第一次开始抓取数据，新旧url队列都没有数据，需要从root_url页面进去抓取所有带抓取的页面url
+            if self.urls.old_urls is None and self.urls.new_urls is None:
+                root_url = "http://www.zhuizhuishu.com/top.html"
+            #上次抓取任务未完成
+            elif self.urls.old_urls is not None and self.urls.new_urls is not None:
+                for url in new_urls:
+                    root_url = url
+            obj_spider.craw_init_urls(root_url)
             return
         except:
             root_url = "http://www.zhuizhuishu.com/top.html"
-            obj_spider.craw(root_url)
+            obj_spider.craw_init_urls(root_url)
             return
+    def init_queue(self,urls):
+        for url in urls:
+            self.queue.put(url)
+    # 根据规则推导出所有页面的url，并加入urls队列
+    def craw_init_urls(self, root_url):
+        html_content = self.downloader.downloade(root_url)
+        init_urls = self.parser.pase_urls(root_url, html_content)
+        self.urls.add_new_urls(init_urls)
+        self.urls.add_old_urls(root_url)
 
     def craw(self, root_url):
         count = 1
@@ -76,3 +94,5 @@ class SpiderMain(object):
 if __name__ == "__main__":
     obj_spider = SpiderMain()
     obj_spider.init_craw_data()
+    obj_spider.init_queue(obj_spider.urls.new_urls)
+    obj_spider.manager = obj_spider.manager.WorkManager(5,obj_spider.queue)

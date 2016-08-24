@@ -13,6 +13,21 @@ class HtmlParser(object):
             page_url = 'http://www.zhuizhuishu.com/top.html'
         soup = BeautifulSoup(html_content, 'html.parser', from_encoding='utf8')
         return self._get_new_urls(page_url, soup), self._get_new_data(page_url, soup)
+    def pase_data(self,page_url,html_content):
+        if html_content is None:
+            return
+        if page_url == '':
+            page_url = 'http://www.zhuizhuishu.com/top.html'
+        soup = BeautifulSoup(html_content, 'html.parser', from_encoding='utf8')
+        return self._get_new_data(page_url,soup)
+
+    def pase_urls(self,page_url,html_content):
+        if html_content is None:
+            return
+        if page_url == '':
+            page_url = 'http://www.zhuizhuishu.com/top.html'
+        soup = BeautifulSoup(html_content, 'html.parser', from_encoding='utf8')
+        return self._get_new_urls(page_url,soup)
 
     def _get_new_data(self, page_url, soup):
         #  <li class="stname"><a href="/mulu_3510.html">五行天</a></li>
